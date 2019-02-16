@@ -9,3 +9,4 @@ Study container related technology.
     - how to escape from chrooted-/ (with `CAP_SYS_CHROOT` capability)
 * namespaces
     - PID namespaces
+    - Network namespaces
