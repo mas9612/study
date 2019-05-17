@@ -10,3 +10,5 @@ Study container related technology.
 * namespaces
     - PID namespaces
     - Network namespaces
+* Kubernetes
+    - [Label/Selector](label_selector.md)
