@@ -248,6 +248,200 @@ Calling ioctl() to re-read partition table.
 Syncing disks.
 ```
 
+## parted command
+
+### List partitions
+```sh
+$ parted -l
+Model: ATA VBOX HARDDISK (scsi)
+Disk /dev/sda: 8590MB
+Sector size (logical/physical): 512B/512B
+Partition Table: msdos
+Disk Flags:
+
+Number  Start   End     Size    Type     File system  Flags
+ 1      1049kB  1075MB  1074MB  primary  xfs          boot
+ 2      1075MB  8590MB  7515MB  primary               lvm
+
+
+Model: ATA VBOX HARDDISK (scsi)
+Disk /dev/sdb: 8590MB
+Sector size (logical/physical): 512B/512B
+Partition Table: msdos
+Disk Flags:
+
+Number  Start   End     Size    Type     File system  Flags
+ 1      1049kB  4296MB  4295MB  primary  ext4
+
+
+Model: Linux device-mapper (linear) (dm)
+Disk /dev/mapper/centos-swap: 860MB
+Sector size (logical/physical): 512B/512B
+Partition Table: loop
+Disk Flags:
+
+Number  Start  End    Size   File system     Flags
+ 1      0.00B  860MB  860MB  linux-swap(v1)
+
+
+Model: Linux device-mapper (linear) (dm)
+Disk /dev/mapper/centos-root: 6652MB
+Sector size (logical/physical): 512B/512B
+Partition Table: loop
+Disk Flags:
+
+Number  Start  End     Size    File system  Flags
+ 1      0.00B  6652MB  6652MB  xfs
+```
+
+### Create partition table
+In this example, create new GPT table.
+To create partition table, use `mklable` command in parted prompt.
+
+```sh
+$ parted /dev/sdb
+GNU Parted 3.1
+Using /dev/sdb
+Welcome to GNU Parted! Type 'help' to view a list of commands.
+(parted) mklabel gpt    # create GPT table. If you want to craete MBR table, use "msdos" instead of "gpt"
+Warning: The existing disk label on /dev/sdb will be destroyed and all data on this disk will be lost. Do you want to continue?
+Yes/No? Yes
+(parted) print
+Model: ATA VBOX HARDDISK (scsi)
+Disk /dev/sdb: 8590MB
+Sector size (logical/physical): 512B/512B
+Partition Table: gpt    # make sure that partition table format is GPT
+Disk Flags:
+
+Number  Start  End  Size  File system  Name  Flags
+
+(parted) quit
+Information: You may need to update /etc/fstab.
+
+```
+
+### Create new partition with 50% size of HDD
+To create new partition, use `mkpart` command in parted prompt.
+
+```sh
+$ parted /dev/sdb
+GNU Parted 3.1
+Using /dev/sdb
+Welcome to GNU Parted! Type 'help' to view a list of commands.
+(parted) print
+Model: ATA VBOX HARDDISK (scsi)
+Disk /dev/sdb: 8590MB
+Sector size (logical/physical): 512B/512B
+Partition Table: gpt
+Disk Flags:
+
+Number  Start  End  Size  File system  Name  Flags
+
+(parted) mkpart primary 0% 50%
+(parted) print
+Model: ATA VBOX HARDDISK (scsi)
+Disk /dev/sdb: 8590MB
+Sector size (logical/physical): 512B/512B
+Partition Table: gpt
+Disk Flags:
+
+Number  Start   End     Size    File system  Name     Flags
+ 1      1049kB  4295MB  4294MB  ext4         primary
+
+(parted) quit
+Information: You may need to update /etc/fstab.
+
+```
+
+### Delete partition
+To delete partition, use `rm` command in parted prompt.
+
+```sh
+$ parted /dev/sdb
+GNU Parted 3.1
+Using /dev/sdb
+Welcome to GNU Parted! Type 'help' to view a list of commands.
+(parted) print
+Model: ATA VBOX HARDDISK (scsi)
+Disk /dev/sdb: 8590MB
+Sector size (logical/physical): 512B/512B
+Partition Table: gpt
+Disk Flags:
+
+Number  Start   End     Size    File system  Name     Flags
+ 1      1049kB  4295MB  4294MB  ext4         primary
+ 2      4295MB  6442MB  2147MB               primary
+
+(parted) rm 2
+(parted) print
+Model: ATA VBOX HARDDISK (scsi)
+Disk /dev/sdb: 8590MB
+Sector size (logical/physical): 512B/512B
+Partition Table: gpt
+Disk Flags:
+
+Number  Start   End     Size    File system  Name     Flags
+ 1      1049kB  4295MB  4294MB  ext4         primary
+
+(parted) quit
+Information: You may need to update /etc/fstab.
+
+```
+
+### Resize partition size
+To resize partition, use `resizepart` command in parted prompt.
+Unlike fdisk command, we don't need to delete partition temporarily.
+
+```sh
+$ parted /dev/sdb
+GNU Parted 3.1
+Using /dev/sdb
+Welcome to GNU Parted! Type 'help' to view a list of commands.
+(parted) print
+Model: ATA VBOX HARDDISK (scsi)
+Disk /dev/sdb: 8590MB
+Sector size (logical/physical): 512B/512B
+Partition Table: gpt
+Disk Flags:
+
+Number  Start   End     Size    File system  Name     Flags
+ 1      1049kB  4295MB  4294MB  ext4         primary
+
+(parted) help
+  align-check TYPE N                        check partition N for TYPE(min|opt) alignment
+  help [COMMAND]                           print general help, or help on COMMAND
+  mklabel,mktable LABEL-TYPE               create a new disklabel (partition table)
+  mkpart PART-TYPE [FS-TYPE] START END     make a partition
+  name NUMBER NAME                         name partition NUMBER as NAME
+  print [devices|free|list,all|NUMBER]     display the partition table, available devices, free space, all found partitions, or a particular partition
+  quit                                     exit program
+  rescue START END                         rescue a lost partition near START and END
+
+  resizepart NUMBER END                    resize partition NUMBER
+  rm NUMBER                                delete partition NUMBER
+  select DEVICE                            choose the device to edit
+  disk_set FLAG STATE                      change the FLAG on selected device
+  disk_toggle [FLAG]                       toggle the state of FLAG on selected device
+  set NUMBER FLAG STATE                    change the FLAG on partition NUMBER
+  toggle [NUMBER [FLAG]]                   toggle the state of FLAG on partition NUMBER
+  unit UNIT                                set the default unit to UNIT
+  version                                  display the version number and copyright information of GNU Parted
+(parted) resizepart 1 75%
+(parted) print
+Model: ATA VBOX HARDDISK (scsi)
+Disk /dev/sdb: 8590MB
+Sector size (logical/physical): 512B/512B
+Partition Table: gpt
+Disk Flags:
+
+Number  Start   End     Size    File system  Name     Flags
+ 1      1049kB  6442MB  6441MB  ext4         primary
+
+(parted) quit
+Information: You may need to update /etc/fstab.
+
+```
+
 ## File system
 > In computing, a file system or filesystem controls how data is stored and retrieved.
 
