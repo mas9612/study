@@ -17,6 +17,7 @@ Store programs when I wrote to study some technology.
     - [SYN Flood](miscellaneous/syn-flood.md)
     - [Mail](miscellaneous/mail.md)
     - [Partition/File system](miscellaneous/partition_filesystem.md)
+    - [Miscellaneous](miscellaneous/miscellaneous.md)
 
 Explanation of some program is available in my [blog](https://www.mas9612.net).
 
